@@ -1,0 +1,12 @@
+{
+  "name": "bioglow-sim-kz",
+  "version": "0.1.0",
+  "private": true,
+  "description": "BIOGLOW robot game practice simulator (Kazakh, Russian, English). Modified from fll-bioglow-simulator.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "start": "python -m http.server 8000"
+  },
+  "license": "AGPL-3.0"
+}

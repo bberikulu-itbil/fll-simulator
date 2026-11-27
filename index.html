@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<!-- If you publish this site, put the address of your own public source repository here (AGPL-3.0 asks you to offer it). -->
+<meta name="source-url" content="https://github.com/bberikulu-itbil/fll-simulator">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BioGlow Robot Game Simulator</title>
+<meta name="description" content="BIOGLOW робот ойынына дайындалуға арналған бейресми симулятор (қазақша, орысша, ағылшынша).">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232D5A3B'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%238FE3B0'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css?v=2026-11-27-kz1">
+<script>
+  // Phones get a one-view-at-a-time layout (swipe between the code and the table). Set before the
+  // first paint so the page doesn't jump; app.js keeps it up to date when the screen turns.
+  (function () {
+    var q = matchMedia('(max-width: 760px), (max-height: 500px) and (pointer: coarse)');
+    var set = function () { document.documentElement.classList.toggle('phone', q.matches); };
+    set(); q.addEventListener('change', function () { set(); window.dispatchEvent(new Event('phonechange')); });
+  })();
+</script>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" data-no-i18n><symbol id="i-run" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16l13-8z" fill="currentColor" stroke="none"/></symbol><symbol id="i-stop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none"/></symbol><symbol id="i-reset" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></symbol><symbol id="i-pause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5v14M16 5v14"/></symbol><symbol id="i-step" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14l9-7z"/><path d="M19 5v14"/></symbol><symbol id="i-sound" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/></symbol><symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></symbol><symbol id="i-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7 8l5-5 5 5M5 21h14"/></symbol><symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol><symbol id="i-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></symbol><symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></symbol><symbol id="i-code" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/></symbol><symbol id="i-trophy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H4v1a4 4 0 0 0 4 4M16 6h4v1a4 4 0 0 1-4 4M12 13v4M8 21h8M9 21l1-4h4l1 4"/></symbol><symbol id="i-robot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 8V4M9 13h.01M15 13h.01M9 16h6M2 12v4M22 12v4"/></symbol><symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol><symbol id="i-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14"/></symbol><symbol id="i-cube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9zM4 7.5l8 4.5 8-4.5M12 12v9"/></symbol><symbol id="i-lang" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9S14.500 18.500 12 21c-2.500-2.500-3.500-5.500-3.500-9S9.500 5.500 12 3z"/></symbol></svg>
+<header class="top">
+  <div class="brand">
+    <span class="logo" aria-hidden="true"><svg class="ic" width="24" height="24" aria-hidden="true"><use href="#i-robot"/></svg></span>
+    <div>
+      <h1>BioGlow Robot Game Simulator</h1>
+      <div class="eyebrow">FIRST LEGO League · 2026–27 · unofficial</div>
+    </div>
+  </div>
+  <div class="row actions">
+    <div class="seg" id="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="kk" data-no-i18n lang="kk">ҚАЗ</button>
+      <button type="button" data-lang="ru" data-no-i18n lang="ru">РУС</button>
+      <button type="button" data-lang="en" data-no-i18n lang="en">ENG</button>
+    </div>
+    <button id="training-open" class="btn" type="button" aria-haspopup="dialog" aria-controls="training-picker" title="Practice Lab"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-target"/></svg><span class="lbl">Practice</span></button>
+    <label class="btn" title="Open SPIKE file"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-up"/></svg><span class="lbl">Open</span>
+      <input id="file" type="file" aria-label="Open SPIKE file" accept=".llsp3,.llsp,.sb3,.json" class="file-input">
+    </label>
+    <button id="export" class="btn" type="button" aria-label="Download .llsp3 file" title="Download .llsp3 file"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-down"/></svg><span class="lbl">Download</span></button>
+    <button id="share" class="btn" type="button" aria-label="Share" title="Share"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-share"/></svg><span class="lbl">Share</span></button>
+    <button id="library-open" hidden class="btn" type="button">Shared programs</button>
+    <button id="library-save" hidden class="btn" type="button">Save</button>
+    <button id="library-copy" hidden class="btn" type="button">Save a copy</button>
+    <button id="library-history" hidden class="btn" type="button" disabled>History</button>
+    <span id="library-current" hidden class="fine" role="status" data-no-i18n></span>
+    <button id="gh-open" hidden class="btn" type="button" aria-label="Open from GitHub">Open from GitHub</button>
+  </div>
+</header>
+
+<div id="msg" class="msg" role="status" hidden></div>
+
+<dialog id="training-picker" aria-labelledby="training-picker-title" aria-describedby="training-picker-description">
+  <div class="row"><h2 id="training-picker-title" class="grow">Practice Lab</h2><button id="training-close" class="btn" type="button" autofocus>Cancel</button></div>
+  <p id="training-picker-description" class="fine">Choose a lab. Each keeps its own practice draft; your main program and robot setup are preserved.</p>
+  <div id="training-list" class="gh-list"></div>
+  <p id="training-picker-status" role="status"></p>
+</dialog>
+
+<dialog id="shared-library" aria-labelledby="library-title">
+  <div class="row"><h2 id="library-title" class="grow">Shared programs</h2><button id="library-cancel" class="btn" type="button">Cancel</button></div>
+  <div id="library-save-fields" hidden>
+    <label>Project name <input id="library-name" maxlength="64" autocomplete="off" placeholder="Mission 03"></label>
+  </div>
+  <label>Nickname (optional) <input id="library-nickname" maxlength="32" autocomplete="off" placeholder="No real names needed"></label>
+  <p class="fine">Shared with everyone using the simulator. Saves contain all blocks and the configured starting x, y and heading. Robot setup stays unchanged.</p>
+  <button id="library-submit" class="btn primary" type="button" hidden>Save to shared library</button>
+  <div id="library-list" class="gh-list"></div>
+  <button id="library-more" class="btn" type="button" hidden>More</button>
+  <p id="library-status" class="fine" role="status"></p>
+</dialog>
+
+<dialog id="gh" class="gh" aria-labelledby="gh-title">
+  <div class="gh-head">
+    <h2 id="gh-title">Open from GitHub</h2>
+    <button id="gh-close" class="btn small" type="button" aria-label="Close">✕</button>
+  </div>
+  <form id="gh-setup" class="gh-setup">
+    <label>Repository <input id="gh-repo" placeholder="owner/repo or github.com link" autocomplete="off" autocapitalize="off" spellcheck="false" required></label>
+    <label>Access token <span class="fine">(only for a private repo)</span>
+      <input id="gh-token" type="password" placeholder="github_pat_…" autocomplete="off" spellcheck="false"></label>
+    <div class="fine">Make a <b>fine-grained token</b> on GitHub (Settings → Developer settings → Fine-grained tokens) with access to <b>only this repository</b>, <b>Contents: Read-only</b>, and an expiry date. It is remembered in this browser only and sent only to GitHub.</div>
+    <div class="row"><button class="btn primary" type="submit">Show projects</button></div>
+  </form>
+  <div id="gh-browse" hidden>
+    <div class="row gh-bar">
+      <span id="gh-where" class="mono grow"></span>
+      <button id="gh-change" class="btn small" type="button">Change</button>
+      <button id="gh-forget" class="btn small red" type="button">Forget token</button>
+    </div>
+    <input id="gh-filter" type="search" placeholder="Filter projects" aria-label="Filter projects">
+    <div id="gh-list" class="gh-list"></div>
+  </div>
+  <div id="gh-status" class="fine" role="status"></div>
+</dialog>
+
+<nav class="views" aria-label="View">
+  <button type="button" data-view="0" aria-pressed="true">Code</button>
+  <button type="button" data-view="1" aria-pressed="false">Table</button>
+</nav>
+
+<main class="app">
+  <section class="panel">
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" data-tab="code" aria-selected="true"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-code"/></svg><span>Code</span></button>
+      <button type="button" role="tab" data-tab="score" aria-selected="false"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-trophy"/></svg><span>Score ·</span><span id="total-tab">0</span></button>
+      <button type="button" role="tab" data-tab="robot" aria-selected="false"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-robot"/></svg><span>Robot</span></button>
+      <button type="button" role="tab" data-tab="field" aria-selected="false"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-gear"/></svg><span>Field</span></button>
+    </div>
+    <div id="tab-code" role="tabpanel"></div>
+    <div id="tab-score" role="tabpanel" hidden></div>
+    <div id="tab-robot" role="tabpanel" hidden></div>
+    <div id="tab-field" role="tabpanel" hidden>
+      <div class="section-h">Mat</div>
+      <div class="seg" id="mat-style" aria-label="Mat">
+        <button type="button" data-mat="plain" aria-pressed="true">Plain</button>
+        <button type="button" data-mat="photo" aria-pressed="false" disabled>Photo</button>
+      </div>
+      <label class="btn small file-btn">Load your own mat photo<input id="mat-file" type="file" accept="image/*" class="file-input"></label>
+      <div class="fine">Photograph your mat straight from above and crop it to the mat edges. It stays in this tab only and is not uploaded.</div>
+      <label class="check"><input type="checkbox" id="grid"> Show the 20 cm wireframe grid</label>
+
+      <div class="section-h">Missions 13–15 docks</div>
+      <div id="dock-selects" class="form-grid"></div>
+
+      <div class="section-h">Hints</div>
+      <label class="check"><input type="checkbox" id="hints"> Show what to do on each model</label>
+      <label class="check"><input type="checkbox" id="sides"> Show approach directions</label>
+      <div class="fine">Tap a model on the mat to see its mission and points. Coaches set approach sides in a model’s card.</div>
+
+      <div class="section-h">Loose pieces</div>
+      <div class="row">
+        <button id="add-piece" class="btn small" type="button">Add piece</button>
+        <button id="reset-pieces" class="btn small" type="button">Reset pieces</button>
+      </div>
+      <div id="piece-list" class="piece-list"></div>
+      <div class="fine">Drag the purple pieces on the mat. The robot pushes them around, and a fork can lift them.</div>
+    </div>
+  </section>
+
+  <section class="field-col">
+    <section id="training-panel" class="training-panel" aria-labelledby="training-title" hidden>
+      <div class="row"><h2 id="training-title" class="grow" tabindex="-1">Practice Lab</h2><button id="training-switch" class="btn small" type="button" aria-haspopup="dialog" aria-controls="training-picker">Switch lab</button><button id="training-leave" class="btn small" type="button" hidden>Return to my program</button></div>
+      <div id="training-active" hidden>
+        <p id="training-goal"></p>
+        <details id="training-help"><summary>Hints and lab instructions</summary>
+          <p class="fine">Finish the program, or leave only idle event listeners while all motors stay stopped on the goal for 0.3 seconds. Stop/Reset interrupts an attempt.</p>
+          <p class="fine">Practice robot: 56 mm wheels, 112 mm spacing, drive A/B, color C and distance D. Use the block editor and Run controls. Import, shared saves and robot/field changes are disabled during practice.</p>
+          <button id="training-hint" class="btn small" type="button">Show a hint</button><ol id="training-hints"></ol>
+        </details>
+        <p id="training-feedback" role="status">Build a program, then press Run.</p>
+        <details id="trial-options"><summary>20-run reliability trials</summary>
+          <p class="fine">An optional sensitivity experiment for this simple scene, not a mission score or a prediction of real LEGO reliability. No “normal LEGO” preset is assumed. Zero settings repeat the nominal scene. Wheel parameters change effective ground travel per encoder degree, not unregulated motor speed.</p>
+          <label>Scenario <select id="trial-scenario"><option value="ideal">Ideal — zero added uncertainty</option><option value="custom">Custom uncertainty — chosen stress case</option></select></label>
+          <div class="form-grid">
+            <label>Repeatable seed<input id="trial-seed" type="number" min="0" max="4294967295" step="1" value="1"></label>
+            <label>Start x/y error ±mm<input data-variation="xy" type="number" min="0" max="50" value="0"></label>
+            <label>Start heading error ±°<input data-variation="heading" type="number" min="0" max="10" value="0"></label>
+            <label>Fixed left travel bias %<input data-variation="leftBias" type="number" min="-10" max="10" step="0.1" value="0"></label>
+            <label>Fixed right travel bias %<input data-variation="rightBias" type="number" min="-10" max="10" step="0.1" value="0"></label>
+            <label>Per-trial wheel variation ±%<input data-variation="wheelJitter" type="number" min="0" max="5" step="0.1" value="0"></label>
+            <label>Per-trial reflection bias ±points<input data-variation="reflection" type="number" min="0" max="20" value="0"></label>
+            <label>Per-trial distance bias ±mm<input data-variation="distance" type="number" min="0" max="30" value="0"></label>
+          </div>
+          <p class="fine">Errors are independent uniform draws within ±bounds, held constant for each run. Fixed wheel biases apply to every run. This models a chosen stress case; motor regulation may compensate real motor differences.</p>
+          <div class="row"><button id="trial-run" class="btn">Run 20 trials</button><button id="trial-cancel" class="btn" disabled>Cancel trials</button></div>
+          <p id="trial-status" role="status">Choose the conditions to explore. Results include seed and exact settings.</p>
+          <ol id="trial-results" class="trial-results"></ol>
+        </details>
+      </div>
+    </section>
+    <div class="toolbar">
+      <button id="run" class="btn primary" type="button"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-run"/></svg><span>Run</span></button>
+      <button id="stop" class="btn" type="button" aria-label="Stop" title="Stop"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-stop"/></svg><span class="lbl">Stop</span></button>
+      <button id="reset" class="btn" type="button" aria-label="Reset" title="Reset"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-reset"/></svg><span class="lbl">Reset</span></button>
+      <button id="pause" class="btn icon" type="button" disabled title="Pause" aria-label="Pause"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-pause"/></svg></button>
+      <button id="single-step" class="btn icon" type="button" disabled title="Step 20 ms" aria-label="Step 20 ms"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-step"/></svg></button>
+      <div class="seg" id="scales" aria-label="Simulation speed" title="Simulation speed">
+        <button type="button" data-scale="0.25" aria-pressed="false">¼×</button>
+        <button type="button" data-scale="0.5" aria-pressed="false">½×</button>
+        <button type="button" data-scale="1" aria-pressed="true">1×</button>
+        <button type="button" data-scale="2" aria-pressed="false">2×</button>
+        <button type="button" data-scale="4" aria-pressed="false">4×</button>
+      </div>
+      <button id="sound" class="btn icon" type="button" aria-pressed="true" aria-label="Sound on" title="Sound on"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><path id="sound-wave" d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg></button>
+      <div class="grow"></div>
+      <button id="match" class="btn match" type="button"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-clock"/></svg><span id="match-label">Start 2:30 match</span><span id="clock" class="clock">2:30</span></button>
+    </div>
+
+    <div class="seg stage-switch" id="stage-switch" role="group" aria-label="View">
+      <button type="button" data-stage="2d" aria-pressed="true"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-map"/></svg><span>2D mat</span></button>
+      <button type="button" data-stage="field" aria-pressed="false"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-cube"/></svg><span>3D field</span></button>
+      <button type="button" data-stage="robot" aria-pressed="false"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-robot"/></svg><span>3D robot</span></button>
+    </div>
+    <div id="stage" class="stage" data-stage="2d">
+    <div class="table">
+      <svg id="field" viewBox="0 0 2000 1143" aria-label="BioGlow mat. Click to place the robot's start position; tap a model to see its mission." role="img"></svg>
+    </div>
+
+    <section id="field-3d" class="field-3d" aria-label="3D field">
+      <div class="row view-buttons">
+        <button class="btn small" type="button" data-camera="reset">Whole field</button>
+        <button class="btn small" type="button" data-camera="top">Top</button>
+        <button class="btn small" type="button" data-camera="robot">Robot</button>
+        <button class="btn small" type="button" data-camera="follow" aria-pressed="false">Follow robot</button>
+      </div>
+      <div class="field-3d-canvas" data-field-canvas></div>
+      <details class="model-pack">
+        <summary>Load local models ZIP</summary>
+        <div class="row field-pack-controls">
+          <label class="btn small">Choose ZIP<input class="file-input" type="file" accept=".zip,application/zip" data-model-file aria-label="Load local models ZIP"></label>
+          <button class="btn small" type="button" data-pack-cancel hidden>Cancel</button>
+          <button class="btn small" type="button" data-pack-unload disabled>Unload models</button>
+          <button class="btn small" type="button" data-pack-retry hidden>Retry</button>
+        </div>
+      </details>
+      <p class="fine field-pack-status" data-pack-status role="status" aria-live="polite"></p>
+      <p class="fine">Drag to rotate. Scroll or pinch to zoom.</p>
+    </section>
+
+    <section id="robot-3d" class="robot-3d" aria-label="3D robot">
+      <div class="row view-buttons">
+        <button class="btn small" type="button" data-robot-view="iso">Isometric</button>
+        <button class="btn small" type="button" data-robot-view="front">Front</button>
+        <button class="btn small" type="button" data-robot-view="back">Back</button>
+        <button class="btn small" type="button" data-robot-view="side">Side</button>
+        <button class="btn small" type="button" data-robot-view="top">Top</button>
+        <button class="btn small" type="button" data-robot-view="bottom">Bottom</button>
+      </div>
+      <div class="robot-canvas" data-robot-canvas></div>
+      <div class="robot-svg" hidden>
+        <svg class="robot-3d-scene" role="img" tabindex="0" aria-label="3D robot schematic"></svg>
+        <div class="robot-3d-readout" data-arm-state data-no-i18n></div>
+        <div class="fine" data-robot-pose data-no-i18n></div>
+      </div>
+      <div class="row">
+        <p class="fine grow" id="robot-note">Modelled by eye from photos; sizes are estimates. The fork is an optional attachment.</p>
+        <button id="obj-export" class="btn small" type="button">Download 3D model (.obj)</button>
+      </div>
+    </section>
+    </div>
+
+    <div id="mission-card" class="mission-card" role="status" hidden></div>
+
+    <div class="readouts">
+      <div class="chip"><div class="k">Color · port <span id="r-cport"></span></div><div class="v"><span id="r-swatch" class="swatch"></span><span id="r-color"></span> <span id="r-reflect" class="mono"></span></div></div>
+      <div class="chip"><div class="k">Distance · port <span id="r-dport"></span></div><div class="v mono" id="r-dist"></div></div>
+      <div class="chip"><div class="k">Yaw angle</div><div class="v mono" id="r-yaw"></div></div>
+      <div class="chip"><div class="k">Motors E · F</div><div class="v mono" id="r-arms"></div></div>
+      <div class="chip"><div class="k">Last push force</div><div class="v mono" id="r-force"></div></div>
+    </div>
+
+    <div id="log" class="log" aria-live="polite"></div>
+
+    <div class="start">
+      <strong>Start position</strong>
+      <label>x (cm)<input id="sx" type="number" step="0.5"></label>
+      <label>y (cm)<input id="sy" type="number" step="0.5"></label>
+      <label>heading (°)<input id="sh" type="number" step="1"></label>
+      <div class="seg side" id="side" aria-label="Start side">
+        <button type="button" data-side="left" aria-pressed="true">Left</button>
+        <button type="button" data-side="right" aria-pressed="false">Right</button>
+      </div>
+      <span class="muted" id="pos"></span>
+    </div>
+
+    <details class="debugger-panel"><summary>More: hub, variables, debugger</summary>
+      <div class="more-grid">
+        <div class="card hub-card">
+          <div class="k">Hub · tap the buttons while a program runs</div>
+          <div class="hub-row">
+            <button type="button" class="hub-btn" id="hub-left" aria-label="Hub left button"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 5v14L5 12z"/></svg></button>
+            <div class="hub-face"><div class="matrix" id="r-matrix" aria-label="Hub light matrix"></div><span class="center-light" id="r-center"></span></div>
+            <button type="button" class="hub-btn" id="hub-right" aria-label="Hub right button"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button>
+          </div>
+          <div class="v mono hub" id="r-display" data-no-i18n></div>
+        </div>
+        <div class="card vars-card" id="r-vars-card" hidden><div class="k">Variables &amp; lists</div><div class="mono vars" id="r-vars" data-no-i18n></div></div>
+      </div>
+      <p class="fine">Pause freezes simulation time. From idle, Step starts a new run paused. One step advances every active stack by 20 ms; waits and moves need multiple steps. Existing block highlights and variables follow all stacks. The small magenta disk shows the approximate 8 mm sensing footprint (not measured SPIKE optics); the larger robot circle only locates the sensor; the ray shows distance sensing.</p>
+      <p id="debug-state" class="mono"></p><p id="debug-trace" class="mono" data-no-i18n></p>
+      <p class="fine">Motor degrees count shaft rotation. Chassis heading measures the robot's direction. They are not interchangeable.</p>
+    </details>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>Unofficial: not affiliated with or endorsed by FIRST® or the LEGO® Group. Field positions are approximate.</span>
+  <a id="own-source" hidden>Source code</a> · <a href="MODIFICATIONS.md">What was changed</a> · <a href="https://github.com/andrewjgcoward-dot/fll-bioglow-simulator">Base version</a> · <a href="https://github.com/masterpigg/fll-bioglow-simulator">Original project</a> · <a href="LICENSE">License AGPL-3.0</a>
+</footer>
+
+<script src="vendor/blockly/blockly.min.js"></script>
+<script>
+  // Every module gets the release version in its URL, so a browser never mixes old and new files
+  // after an update. Bump VERSION (and the stylesheet's ?v=) with each release.
+  (function () {
+    var VERSION = '2026-11-27-kz1';
+    var files = ['app', 'i18n', 'physics', 'robot-ev3', 'robot-viewer', 'lang/ui', 'lang/blocks', 'lang/patterns', 'lang/blockly-kk', 'sim', 'training', 'practice-session', 'blocks', 'blocks-json', 'workspace', 'spike-io', 'robot-view', 'robot-3d', 'field-3d', 'bundled-models', 'bundled-model-decoder', 'bundled-model-codec', 'sha256', 'model-pack', 'model-placement', 'field', 'github', 'share', 'mat-photo', 'sensor-sampling', 'compatibility', 'program-transaction', 'spike-validation', 'workspace-transaction', 'workspace-session', 'save-format', 'shared-library', 'library-ui', 'firebase-config'];
+    var map = { imports: { three: './vendor/three/build/three.module.js' } };
+    files.forEach(function (f) { map.imports['./src/' + f + '.js'] = './src/' + f + '.js?v=' + VERSION; });
+    var im = document.createElement('script'); im.type = 'importmap'; im.textContent = JSON.stringify(map);
+    document.currentScript.after(im);
+    var app = document.createElement('script'); app.type = 'module'; app.src = './src/app.js?v=' + VERSION;
+    im.after(app);
+  })();
+</script>
+</body>
+</html>
