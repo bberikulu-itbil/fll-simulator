@@ -8,7 +8,7 @@
 <title>BioGlow Robot Game Simulator</title>
 <meta name="description" content="BIOGLOW робот ойынына дайындалуға арналған бейресми симулятор (қазақша, орысша, ағылшынша).">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232D5A3B'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%238FE3B0'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="style.css?v=2026-11-27-kz1">
+<link rel="stylesheet" href="style.css?v=2026-11-27-kz2">
 <script>
   // Phones get a one-view-at-a-time layout (swipe between the code and the table). Set before the
   // first paint so the page doesn't jump; app.js keeps it up to date when the screen turns.
@@ -17,13 +17,42 @@
     var set = function () { document.documentElement.classList.toggle('phone', q.matches); };
     set(); q.addEventListener('change', function () { set(); window.dispatchEvent(new Event('phonechange')); });
   })();
+  // No address part means the start page (also set before the first paint).
+  if (/^#?(home)?$/.test(location.hash)) document.documentElement.classList.add('at-home');
 </script>
 </head>
 <body>
-<svg xmlns="http://www.w3.org/2000/svg" style="display:none" data-no-i18n><symbol id="i-run" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16l13-8z" fill="currentColor" stroke="none"/></symbol><symbol id="i-stop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none"/></symbol><symbol id="i-reset" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></symbol><symbol id="i-pause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5v14M16 5v14"/></symbol><symbol id="i-step" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14l9-7z"/><path d="M19 5v14"/></symbol><symbol id="i-sound" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/></symbol><symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></symbol><symbol id="i-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7 8l5-5 5 5M5 21h14"/></symbol><symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol><symbol id="i-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></symbol><symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></symbol><symbol id="i-code" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/></symbol><symbol id="i-trophy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H4v1a4 4 0 0 0 4 4M16 6h4v1a4 4 0 0 1-4 4M12 13v4M8 21h8M9 21l1-4h4l1 4"/></symbol><symbol id="i-robot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 8V4M9 13h.01M15 13h.01M9 16h6M2 12v4M22 12v4"/></symbol><symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol><symbol id="i-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14"/></symbol><symbol id="i-cube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9zM4 7.5l8 4.5 8-4.5M12 12v9"/></symbol><symbol id="i-lang" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9S14.500 18.500 12 21c-2.500-2.500-3.500-5.500-3.500-9S9.500 5.500 12 3z"/></symbol></svg>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" data-no-i18n><symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 9-8 9 8M5 9.5V21h5v-6h4v6h5V9.5"/></symbol><symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6zM14 3v4h4"/></symbol><symbol id="i-new" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6zM12 10v7M8.5 13.5h7"/></symbol><symbol id="i-save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v15H5zM8 3v5h7V3M8 21v-7h8v7"/></symbol><symbol id="i-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h6l2 2.5h10V19H3z"/></symbol><symbol id="i-run" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16l13-8z" fill="currentColor" stroke="none"/></symbol><symbol id="i-stop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none"/></symbol><symbol id="i-reset" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></symbol><symbol id="i-pause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5v14M16 5v14"/></symbol><symbol id="i-step" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14l9-7z"/><path d="M19 5v14"/></symbol><symbol id="i-sound" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/></symbol><symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></symbol><symbol id="i-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7 8l5-5 5 5M5 21h14"/></symbol><symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol><symbol id="i-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></symbol><symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></symbol><symbol id="i-code" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/></symbol><symbol id="i-trophy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H4v1a4 4 0 0 0 4 4M16 6h4v1a4 4 0 0 1-4 4M12 13v4M8 21h8M9 21l1-4h4l1 4"/></symbol><symbol id="i-robot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 8V4M9 13h.01M15 13h.01M9 16h6M2 12v4M22 12v4"/></symbol><symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol><symbol id="i-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14"/></symbol><symbol id="i-cube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9zM4 7.5l8 4.5 8-4.5M12 12v9"/></symbol><symbol id="i-lang" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9S14.500 18.500 12 21c-2.500-2.500-3.500-5.500-3.500-9S9.500 5.500 12 3z"/></symbol></svg>
+<div id="home">
+  <div class="home-bar">
+    <div class="seg" role="group" aria-label="Language">
+      <button type="button" data-lang="kk" data-no-i18n lang="kk">ҚАЗ</button>
+      <button type="button" data-lang="ru" data-no-i18n lang="ru">РУС</button>
+      <button type="button" data-lang="en" data-no-i18n lang="en">ENG</button>
+    </div>
+  </div>
+  <div class="home-body">
+    <h2 class="home-title">Robot game simulator</h2>
+    <p class="home-lead">Choose a season to practise.</p>
+    <div class="home-cards">
+      <a class="season" href="#bioglow">
+        <svg class="season-art" viewBox="0 0 320 130" aria-hidden="true" data-no-i18n><rect width="320" height="130" fill="#0f2a22"/><path d="M0 104 Q70 78 140 100 T320 84 V130 H0Z" fill="#1d4a38"/><path d="M34 106 C70 60 118 118 160 82 S250 70 286 42" fill="none" stroke="#8FE3B0" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 9"/><g fill="#8FE3B0"><circle cx="34" cy="106" r="6"/><circle cx="160" cy="82" r="5"/><circle cx="286" cy="42" r="8"/></g><g fill="#8FE3B0" opacity=".18"><circle cx="34" cy="106" r="15"/><circle cx="160" cy="82" r="13"/><circle cx="286" cy="42" r="22"/></g><g fill="#F2C48A"><circle cx="92" cy="40" r="2.5"/><circle cx="212" cy="30" r="2"/><circle cx="246" cy="104" r="2.5"/><circle cx="126" cy="24" r="1.8"/></g></svg>
+        <span class="season-body">
+          <b class="season-name" data-no-i18n>BIOGLOW</b>
+          <span class="fine">FIRST LEGO League · 2026–27</span>
+          <span>Mat, 15 missions, 3D robot, practice labs and your own saved files.</span>
+          <span class="btn primary season-go"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-run"/></svg><span>Enter</span></span>
+        </span>
+      </a>
+    </div>
+    <p class="fine home-foot">Unofficial: not affiliated with or endorsed by FIRST® or the LEGO® Group.</p>
+    <p class="fine home-foot"><a href="MODIFICATIONS.md">What was changed</a> · <a href="LICENSE">License AGPL-3.0</a> · <a id="home-source" hidden>Source code</a></p>
+  </div>
+</div>
+
 <header class="top">
   <div class="brand">
-    <span class="logo" aria-hidden="true"><svg class="ic" width="24" height="24" aria-hidden="true"><use href="#i-robot"/></svg></span>
+    <a class="logo" href="#home" title="Start page" aria-label="Start page"><svg class="ic" width="24" height="24" aria-hidden="true"><use href="#i-home"/></svg></a>
     <div>
       <h1>BioGlow Robot Game Simulator</h1>
       <div class="eyebrow">FIRST LEGO League · 2026–27 · unofficial</div>
@@ -51,6 +80,26 @@
 </header>
 
 <div id="msg" class="msg" role="status" hidden></div>
+
+<dialog id="files" class="files" aria-labelledby="files-title">
+  <div class="row"><h2 id="files-title" class="grow">My files</h2><button id="files-close" class="btn small" type="button" aria-label="Close">✕</button></div>
+  <div class="seg files-kinds" role="group" aria-label="Kind of file">
+    <button type="button" data-kind="program" aria-pressed="true">Programs</button>
+    <button type="button" data-kind="robot" aria-pressed="false">Robots</button>
+    <button type="button" data-kind="attachment" aria-pressed="false">Attachments</button>
+  </div>
+  <form id="files-form" class="files-form">
+    <input id="files-name" maxlength="60" autocomplete="off" placeholder="File name" aria-label="File name">
+    <button id="files-save" class="btn primary" type="submit">Save program</button>
+    <button id="files-new" class="btn" type="button">New file</button>
+  </form>
+  <button id="files-from-computer" class="btn small" type="button"><svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-up"/></svg><span>Open from computer</span></button>
+  <input id="files-import" type="file" accept=".json,application/json" hidden>
+  <p id="files-status" class="files-status" role="status" data-no-i18n></p>
+  <ul id="files-list" class="files-list" data-no-i18n></ul>
+  <p id="files-note" class="fine" data-no-i18n></p>
+  <p class="fine">Files are kept in this browser on this device only. Clearing browser data deletes them, so download a copy of anything important.</p>
+</dialog>
 
 <dialog id="training-picker" aria-labelledby="training-picker-title" aria-describedby="training-picker-description">
   <div class="row"><h2 id="training-picker-title" class="grow">Practice Lab</h2><button id="training-close" class="btn" type="button" autofocus>Cancel</button></div>
@@ -296,8 +345,8 @@
   // Every module gets the release version in its URL, so a browser never mixes old and new files
   // after an update. Bump VERSION (and the stylesheet's ?v=) with each release.
   (function () {
-    var VERSION = '2026-11-27-kz1';
-    var files = ['app', 'i18n', 'physics', 'robot-ev3', 'robot-viewer', 'lang/ui', 'lang/blocks', 'lang/patterns', 'lang/blockly-kk', 'sim', 'training', 'practice-session', 'blocks', 'blocks-json', 'workspace', 'spike-io', 'robot-view', 'robot-3d', 'field-3d', 'bundled-models', 'bundled-model-decoder', 'bundled-model-codec', 'sha256', 'model-pack', 'model-placement', 'field', 'github', 'share', 'mat-photo', 'sensor-sampling', 'compatibility', 'program-transaction', 'spike-validation', 'workspace-transaction', 'workspace-session', 'save-format', 'shared-library', 'library-ui', 'firebase-config'];
+    var VERSION = '2026-11-27-kz2';
+    var files = ['app', 'files', 'files-ui', 'robot-files', 'i18n', 'physics', 'robot-ev3', 'robot-viewer', 'lang/ui', 'lang/blocks', 'lang/patterns', 'lang/blockly-kk', 'sim', 'training', 'practice-session', 'blocks', 'blocks-json', 'workspace', 'spike-io', 'robot-view', 'robot-3d', 'field-3d', 'bundled-models', 'bundled-model-decoder', 'bundled-model-codec', 'sha256', 'model-pack', 'model-placement', 'field', 'github', 'share', 'mat-photo', 'sensor-sampling', 'compatibility', 'program-transaction', 'spike-validation', 'workspace-transaction', 'workspace-session', 'save-format', 'shared-library', 'library-ui', 'firebase-config'];
     var map = { imports: { three: './vendor/three/build/three.module.js' } };
     files.forEach(function (f) { map.imports['./src/' + f + '.js'] = './src/' + f + '.js?v=' + VERSION; });
     var im = document.createElement('script'); im.type = 'importmap'; im.textContent = JSON.stringify(map);

@@ -15,6 +15,9 @@ import { drawRobot } from './robot-view.js';
 import { createRobot3D, robotScene, robotMeshData } from './robot-3d.js';
 import { tr, translatePage, getLang, setLang } from './i18n.js';
 import { physicsOf, driveForce, sweepForce, liftCapacityG, pieceMass } from './physics.js';
+import { setupFiles } from './files-ui.js';
+import { downloadName } from './files.js';
+import { cleanRobot, fitAttachment } from './robot-files.js';
 import { photoSampler } from './mat-photo.js';
 import { importProject, exportLlsp3 } from './spike-io.js';
 import { parseRepo, listProjects, fetchProject } from './github.js';
@@ -28,6 +31,8 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<'
 // ---------- state (program, robot and score survive a reload) ----------
 
 const STORE = 'bioglow-sim-v2';
+const SIM_HASH = '#bioglow';
+const isHome = (hash) => /^#?(home)?$/.test(hash);
 let training = null, projectGeneration = 0, trialGeneration = 0, trainingRun = null, trialPaths = [];
 let hintCount = 0, trialBusy = false;
 function load() {
@@ -72,6 +77,7 @@ const state = {
   autoScore: saved.autoScore ?? true, docks: Object.assign({}, DEFAULT_DOCKS, saved.docks), hints: saved.hints ?? true,
   approach: Object.assign({}, DEFAULT_APPROACH, saved.approach), showSides: !!saved.showSides,
   mat: 'plain', // a mat photo is never stored, so every visit starts plain
+  file: saved.file || null, // which of "My files" the editor holds
   limits: Object.assign({}, saved.limits), stage: ['2d', 'field', 'robot'].includes(saved.stage) ? saved.stage : '2d'
 };
 function save() {
@@ -80,7 +86,7 @@ function save() {
   try {
     localStorage.setItem(STORE, JSON.stringify({
       workspaceFormat: 1, robotHomeVersion: 2, program: state.program, ws: state.ws, sounds: state.sounds, soundOn: state.soundOn, cfg: state.cfg, start: state.start, pieces: state.pieces,
-      score: state.score, tokens: state.tokens, inspection: state.inspection, grid: state.grid, autoScore: state.autoScore, docks: state.docks, hints: state.hints, approach: state.approach, showSides: state.showSides, mat: state.mat, limits: state.limits, stage: state.stage
+      score: state.score, tokens: state.tokens, inspection: state.inspection, grid: state.grid, autoScore: state.autoScore, docks: state.docks, hints: state.hints, approach: state.approach, showSides: state.showSides, mat: state.mat, limits: state.limits, stage: state.stage, file: state.file
     }));
   } catch { /* storage unavailable: keep working without it */ }
 }
@@ -129,14 +135,14 @@ function exportObj() {
 $('obj-export').onclick = exportObj;
 $('stage-switch').addEventListener('click', (e) => { const b = e.target.closest('[data-stage]'); if (!b) return; setStage(b.dataset.stage); save(); drawField(); });
 
-document.querySelectorAll('#lang [data-lang]').forEach(b => {
+document.querySelectorAll('#lang [data-lang], #home [data-lang]').forEach(b => {
   b.setAttribute('aria-pressed', String(b.dataset.lang === getLang()));
   // Reload so the block editor is rebuilt in the new language; the program is saved first.
   b.onclick = () => { if (b.dataset.lang === getLang()) return; saveEditorBeforeLeaving(); setLang(b.dataset.lang); location.reload(); };
 });
 {
   const url = document.querySelector('meta[name="source-url"]')?.content.trim();
-  if (/^https:\/\//.test(url || '')) { $('own-source').href = url; $('own-source').hidden = false; }
+  if (/^https:\/\//.test(url || '')) for (const id of ['own-source', 'home-source']) { $(id).href = url; $(id).hidden = false; }
 }
 
 // ---------- hub: light matrix, center light, buttons, variables, sound ----------
@@ -513,7 +519,7 @@ function renderStart() {
 }
 
 function setStart(patch) {
-  Object.assign(state.start, patch); sim.start = state.start; save(); renderStart();
+  Object.assign(state.start, patch); sim.start = state.start; save(); renderStart(); files?.renderBar();
   if (!sim.running) { sim.placeRobot(); drawField(); }
 }
 
@@ -527,7 +533,7 @@ $('side').addEventListener('click', (e) => {
 
 // ---------- code tab (drag-and-drop blocks) ----------
 
-let libraryUI = null;
+let libraryUI = null, files = null;
 let ws = null, toolbox = null, lastLit = new Set(), loadingWs = false;
 
 // Show a program in the block editor (after an import, the demo, or Clear).
@@ -556,6 +562,12 @@ function syncProgram() { workspaceSession.sync(); }
 
 function initCode() {
   $('tab-code').innerHTML = `
+    <div class="filebar">
+      <button type="button" id="fb-name" class="file-name" data-open-files="program"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-file"/></svg><span id="fb-text" data-no-i18n></span><span id="fb-mark" aria-hidden="true" data-no-i18n></span></button>
+      <button type="button" id="fb-new" class="btn small" title="New file"><svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-new"/></svg><span>New</span></button>
+      <button type="button" id="fb-save" class="btn small" title="Save (Ctrl+S)"><svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-save"/></svg><span>Save</span></button>
+      <button type="button" id="fb-files" class="btn small" data-open-files="program" title="My files"><svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-folder"/></svg><span>My files</span></button>
+    </div>
     <div class="code-head">
       <span class="muted" id="code-status"></span>
       <div class="row"><button type="button" class="ghost" data-act="demo">Demo</button><button type="button" class="ghost" data-act="clear">Clear</button></div>
@@ -591,8 +603,10 @@ function initCode() {
 
 $('tab-code').addEventListener('click', (e) => {
   const btn = e.target.closest('[data-act]'); if (!btn) return;
-  if (btn.dataset.act === 'demo') { showProgram(demoProgram()); setStart({ x: 240, y: 240, h: 0 }); }
-  else if (btn.dataset.act === 'clear') showProgram(emptyProgram());
+  const own = training?.active ? null : files; // practice drafts are separate from "My files"
+  if (!recoveryError && own && !own.mayDiscard()) return;
+  if (btn.dataset.act === 'demo') { showProgram(demoProgram()); setStart({ x: 240, y: 240, h: 0 }); own?.detach(); }
+  else if (btn.dataset.act === 'clear') { showProgram(emptyProgram()); own?.renderBar(); }
 });
 
 // ---------- score tab ----------
@@ -670,6 +684,7 @@ function renderRobot() {
       <button type="button" class="btn small" data-preset="ev3" aria-pressed="${ev3}">Our EV3 robot</button>
       <button type="button" class="btn small" data-preset="spike" aria-pressed="${!ev3}">SPIKE driving base</button>
     </div>
+    <div class="row"><button type="button" class="btn small" data-open-files="robot"><svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-folder"/></svg><span>My robots</span></button><button type="button" class="btn small" data-open-files="attachment"><svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-folder"/></svg><span>My attachments</span></button></div>
     <div class="fine">${ev3 ? 'Programs are written with SPIKE Prime blocks; EV3 program files cannot be opened. Measure the real robot and correct the sizes below.' : 'The practice driving base from the original project.'}</div>
 
     <div class="section-h">Robot layout</div>
@@ -738,11 +753,19 @@ function renderPhysSummary() {
 }
 
 function applyPreset(model) {
-  const next = model === 'ev3' ? normalizeConfig(structuredClone(EV3_PRESET)) : migrateArmHome({}).cfg;
+  applyRobot(model === 'ev3' ? normalizeConfig(structuredClone(EV3_PRESET)) : migrateArmHome({}).cfg);
+}
+// Replace the whole robot setup. The config object itself stays, because the simulator shares it.
+function applyRobot(next) {
   sim.stop();
   for (const k of Object.keys(state.cfg)) delete state.cfg[k];
-  Object.assign(state.cfg, next);
+  Object.assign(state.cfg, structuredClone(next));
   state.sel = 'color'; save(); sim.reset(); renderRobot(); drawField();
+}
+function applyAttachment(attachment) {
+  sim.stop();
+  fitAttachment(state.cfg, attachment);
+  state.sel = 'arm:' + state.cfg.arms[0].id; save(); sim.reset(); renderRobot(); drawField();
 }
 
 // Work out wheel size, wheel spacing or top speed from a real test run.
@@ -1084,14 +1107,16 @@ $('reset-pieces').onclick = () => {
 };
 
 // ---------- shared named saves ----------
+function updateCodeStatus() {
+  const n = ws.getAllBlocks(false).filter(block => !block.isShadow()).length;
+  $('code-status').textContent = `${n} editor block${n === 1 ? '' : 's'}`;
+  files?.renderBar();
+}
 const workspaceSession = createWorkspaceSession({
   state, getWorkspace: () => ws, getBlockly: () => window.Blockly,
   guard() { if (recoveryError) throw recoveryError; },
   persist: save,
-  status() {
-    const n = ws.getAllBlocks(false).filter(block => !block.isShadow()).length;
-    $('code-status').textContent = `${n} editor block${n === 1 ? '' : 's'}`;
-  },
+  status() { updateCodeStatus(); },
   beforeRestore() { sim.stop(); recoveryError = null; },
   afterRestore() { sim.start = state.start; sim.reset(); renderStart(); drawField(); }
 });
@@ -1125,6 +1150,7 @@ async function openProject(buf, name, generation = projectGeneration) {
   try {
     const res = await importProject(buf);
     if (training?.active || generation!==projectGeneration) throw Error('Import canceled because the workspace mode changed.');
+    if (!recoveryError && files && !files.mayDiscard()) return false;
     showProgram(res.program);
     Object.assign(state.cfg, res.cfg);
     save();
@@ -1134,7 +1160,8 @@ async function openProject(buf, name, generation = projectGeneration) {
     if (res.cfg.distPort) setup.push('distance sensor on ' + res.cfg.distPort);
     if (res.cfg.forcePort) setup.push('force sensor on ' + res.cfg.forcePort);
     sim.reset(); renderRobot(); drawField();
-    showMsg(`Imported “${name}”: ${countBlocks(res.program)} blocks.` + (setup.length ? ' Robot set to: ' + setup.join(', ') + '.' : '') + (res.warn.length ? '\n' + res.warn.slice(0, 6).join('\n') : ''));
+    files?.detach(name.replace(/\.(llsp3|llsp|sb3|json)$/i, ''));
+    showMsg(`Imported “${name}”: ${countBlocks(res.program)} blocks.` + (setup.length ? ' Robot set to: ' + setup.map(t => tr(t)).join(', ') + '.' : '') + (res.warn.length ? '\n' + res.warn.slice(0, 6).join('\n') : ''));
     return true;
   } catch (err) { showMsg(`Could not import “${name}”: ${err.message}`); return false; }
 }
@@ -1221,11 +1248,13 @@ $('gh-filter').oninput = () => ghRenderList();
 let lastUrl = null;
 $('export').onclick = () => {
   let zip;
-  try { ({ zip } = exportLlsp3(latestProgram(), 'BioGlow sim export')); }
+  const ownName = training?.active ? '' : files?.currentName();
+  const fileName = downloadName(ownName);
+  try { ({ zip } = exportLlsp3(latestProgram(), ownName || 'BioGlow sim export')); }
   catch (err) { showMsg('Cannot export: ' + err.message); return; }
   if (lastUrl) URL.revokeObjectURL(lastUrl);
   lastUrl = URL.createObjectURL(new Blob([zip], { type: 'application/octet-stream' }));
-  const a = document.createElement('a'); a.href = lastUrl; a.download = 'bioglow-sim.llsp3'; a.className = 'btn save'; a.textContent = tr('Save bioglow-sim.llsp3');
+  const a = document.createElement('a'); a.href = lastUrl; a.download = fileName; a.className = 'btn save'; a.textContent = `${tr('Download')}: ${fileName}`; a.dataset.noI18n = '';
   showMsg(tr('Export ready for the supported SPIKE Prime Word Blocks subset. Physical-hub behavior still requires testing.') + '\n', a);
   a.click();
 };
@@ -1292,28 +1321,27 @@ async function shareRobot() {
 
 async function openSharedRobot(code) {
   const generation=projectGeneration;
-  history.replaceState(null, '', location.pathname + location.search);
+  history.replaceState(null, '', location.pathname + location.search + SIM_HASH);
   let robot;
-  try { robot = await decodeRobot(code); } catch (err) { showMsg(err.message); return; }
+  try { robot = cleanRobot(await decodeRobot(code)); } catch (err) { showMsg(err.message); return; }
   if(training?.active || generation!==projectGeneration)return;
   if (!confirm(tr('Load the shared robot? It replaces the robot setup on this device. Your program stays.'))) return;
   sim.stop();
-  Object.assign(state.cfg, normalizeConfig(robot));
-  save(); sim.reset(); renderRobot(); drawField();
+  applyRobot(robot);
   showMsg('Loaded a shared robot. Check it on the Robot tab.');
 }
 
 // Open a program from a share link (on load, or when a link is pasted into this tab).
 async function openShared() {
+  const robotCode = robotCodeFromHash(location.hash);
+  if (!robotCode && !codeFromHash(location.hash)) return;
   if (training?.active) { showMsg('Return to your main program before opening a shared link.'); return; }
   const generation=projectGeneration;
-  const robotCode = robotCodeFromHash(location.hash);
   if (robotCode) { await openSharedRobot(robotCode); return; }
   const code = codeFromHash(location.hash);
-  if (!code) return;
-  history.replaceState(null, '', location.pathname + location.search); // a reload shouldn't reopen it
+  history.replaceState(null, '', location.pathname + location.search + SIM_HASH); // a reload shouldn't reopen it
   let data;
-  try { data = await decodeShare(code); } catch (err) { showMsg(err.message); return; }
+  try { data = await decodeShare(code); if (data.cfg) data.cfg = cleanRobot(data.cfg); } catch (err) { showMsg(err.message); return; }
   if ((recoveryError || (ws ? ws.getAllBlocks(false).length > 0 : countBlocks(state.program) > 0)) && !confirm(tr('Open the shared program? It replaces the program, robot setup and start position here.'))) return;
   if (training?.active || generation!==projectGeneration) return;
   try { showProgram(data.program); } catch (err) { showMsg('Cannot open shared project: ' + err.message); return; }
@@ -1324,6 +1352,7 @@ async function openShared() {
   if (data.approach && Object.keys(data.approach).length) { for (const k of Object.keys(state.approach)) delete state.approach[k]; Object.assign(state.approach, data.approach); save(); }
   if (data.limits && Object.keys(data.limits).length) { for (const k of Object.keys(state.limits)) delete state.limits[k]; Object.assign(state.limits, data.limits); save(); }
   sim.reset(); renderRobot(); drawField();
+  files?.detach();
   showMsg(`Opened a shared program: ${countBlocks(data.program)} blocks.`);
 }
 window.addEventListener('hashchange', openShared);
@@ -1396,7 +1425,7 @@ function setupTraining() {
       $('training-feedback').textContent='Build a program, then press Run.';
       $('trial-results').replaceChildren();$('trial-status').textContent='Choose conditions; zero values repeat the nominal scene.';
       // The shared-library selection remains attached to the protected main draft.
-      for(const key of ['library-open','library-save','library-copy','library-history','file','gh-open','share','match','sx','sy','sh']) {
+      for(const key of ['library-open','library-save','library-copy','library-history','file','gh-open','share','match','sx','sy','sh','fb-name','fb-new','fb-save','fb-files']) {
         const el=$(key);if(id){if(!('practiceDisabled' in el.dataset))el.dataset.practiceDisabled=String(el.disabled);el.disabled=true;}
         else if('practiceDisabled' in el.dataset){el.disabled=el.dataset.practiceDisabled==='true';delete el.dataset.practiceDisabled;}
       }
@@ -1504,15 +1533,68 @@ let lastDraw = 0;
 function draw() { dirty = false; lastDraw = performance.now(); drawField(); }
 function frame() { if (dirty) draw(); requestAnimationFrame(frame); }
 
+// ---------- start page ----------
+// The start page covers the simulator, which stays laid out underneath (the block editor needs that).
+function route() {
+  const home = isHome(location.hash);
+  document.documentElement.classList.toggle('at-home', home);
+  if (home) {
+    for (const d of document.querySelectorAll('dialog[open]')) d.close();
+    cancelTrials(); if (sim.running || sim.matchOn) sim.stop();
+    saveEditorBeforeLeaving();
+  }
+  for (const el of document.body.children) if (el.id !== 'home' && el.tagName !== 'SCRIPT') el.inert = home;
+}
+
+function setupMyFiles() {
+  if (!ws) return;
+  const firstVisit = !loadedState.program;
+  files = setupFiles({
+    storage: { getItem: k => localStorage.getItem(k), setItem: (k, v) => localStorage.setItem(k, v) },
+    getDoc: () => state.file,
+    setDoc: doc => { state.file = doc; save(); },
+    capture: () => { const data = workspaceSession.capture(); const { x, y, h } = data.start; return { ...data, start: { x, y, h } }; },
+    restore(data) {
+      loadingWs = true;
+      try { workspaceSession.restore(data); projectGeneration++; } finally { loadingWs = false; }
+    },
+    blank: () => showProgram(emptyProgram()),
+    getRobot: () => state.cfg, applyRobot, applyAttachment,
+    blocked: () => training?.active ? 'Return to your main program first.' : recoveryError ? 'The saved project is blocked. Press Clear or Demo first.' : '',
+    message: (...args) => showMsg(...args),
+    openSpikeFile: () => $('file').click(),
+    practising: () => Boolean(training?.active)
+  });
+  if (!state.file) {
+    // The example program has nothing to lose; work saved by an earlier version does.
+    if (firstVisit) files.detach(); else state.file = { id: null, stamp: 0, clean: null, suggest: '' };
+    files.renderBar();
+  }
+}
+// Entering or leaving practice swaps the editor's program without telling the status line.
+function watchPractice() {
+  if (ws) new MutationObserver(() => requestAnimationFrame(updateCodeStatus)).observe($('training-panel'), { attributeFilter: ['hidden'] });
+}
+// Ctrl+S / ⌘S saves the program (by key position, so it works on Kazakh and Russian layouts).
+document.addEventListener('keydown', (e) => {
+  if (!(e.ctrlKey || e.metaKey) || e.code !== 'KeyS' || isHome(location.hash)) return;
+  e.preventDefault();
+  if (!document.querySelector('dialog[open]')) files?.quickSave();
+});
+
 if (getLang() === 'ru') await new Promise((resolve) => { // Blockly's own Russian menus
   const script = document.createElement('script'); script.src = 'vendor/blockly/ru.js'; script.onload = script.onerror = resolve; document.head.append(script);
 });
 translatePage();
 buildField(); renderPieces(); renderStart(); renderDocks(); initCode(); setupTraining(); renderScore(); renderRobot(); renderLog(); drawField();
 setStage(state.stage); drawField();
+setupMyFiles();
+watchPractice();
+window.addEventListener('hashchange', route);
+route();
 openShared();
 requestAnimationFrame(frame);
 // Save the latest blocks when the page is hidden or closed.
-const saveEditorBeforeLeaving = () => { if (ws) { try { syncProgram(); } catch (err) { showMsg(err.message); } } };
+function saveEditorBeforeLeaving() { if (ws) { try { syncProgram(); } catch (err) { showMsg(err.message); } } }
 document.addEventListener('visibilitychange', () => { if (document.hidden) saveEditorBeforeLeaving(); });
 window.addEventListener('pagehide', saveEditorBeforeLeaving);

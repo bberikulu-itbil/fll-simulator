@@ -13,6 +13,9 @@ This is a **modified version** of the BioGlow Robot Game Simulator. Modified on 
 - **Интерфейс:** иконкалар, 2D карта / 3D алаң / 3D робот ауыстырғышы, қосымша панельдер жиналып тұрады, телефонға бейімделген.
 - **Өз картаңыздың фотосы:** тек ашық тұрған бетте қолданылады, еш жерге жіберілмейді.
 - **Интернетсіз редактор:** Blockly 11.2.2 жоба ішіне салынды; сырттан CDN не шрифт жүктелмейді.
+- **Бастапқы бет:** маусымды таңдап кіру (`index.html`).
+- **«Менің файлдарым»:** бағдарлама, робот және насадка файлдары (`src/files.js`, `src/files-ui.js`, `src/robot-files.js`).
+- **Сілтемедегі робот баптауын тексеру:** ортақ сілтемеден не файлдан келген робот деректерінің әр мәні тексеріледі, қате болса қабылданбайды.
 
 ## Алынып тасталғаны
 
@@ -25,6 +28,6 @@ This is a **modified version** of the BioGlow Robot Game Simulator. Modified on 
 
 ## English summary
 
-Added: Kazakh/Russian/English UI and block text; a 3D model of an EV3-style robot (modelled by eye from photos) with OBJ export; simplified push-force, per-mission direction/force/speed limits and fork lifting of loose pieces; an icon-based layout; loading your own mat photo; locally vendored Blockly. The default robot is now the EV3 preset with a fork attachment (arm ratio 1).
+Added: Kazakh/Russian/English UI and block text; a 3D model of an EV3-style robot (modelled by eye from photos) with OBJ export; simplified push-force, per-mission direction/force/speed limits and fork lifting of loose pieces; an icon-based layout; loading your own mat photo; locally vendored Blockly; a start page for choosing the season; named saved files for programs, robots and attachments; strict checking of robot settings that arrive in shared links or files. The default robot is now the EV3 preset with a fork attachment (arm ratio 1).
 
 Removed: the bundled 3D field models and the official mat photo (no redistribution licence), the upstream author's Firebase configuration, the admin page, and the tests and tools that depended on those files.

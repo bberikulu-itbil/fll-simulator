@@ -169,7 +169,7 @@ h1 { margin: 4px 0 0; font-size: 28px; line-height: 1.1; }
 .props-h { font-weight: 700; }
 
 .code-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-#blockly { height: calc(100vh - 285px); min-height: 440px; border-radius: 12px; overflow: hidden; }
+#blockly { height: calc(100vh - 335px); min-height: 400px; border-radius: 12px; overflow: hidden; }
 @media (max-width: 1000px) { #blockly { height: 70vh; } }
 .blocklyToolboxDiv { padding-top: 6px; }
 .blocklyTreeLabel, .blocklyToolboxCategoryLabel { font-family: var(--sans); font-weight: 700; }
@@ -343,3 +343,66 @@ h1 { margin: 0; font-size: 22px; }
 .phone .tabs button[data-tab="score"] .ic { grid-column: 1 / -1; justify-self: center; }
 
 @media (max-height: 500px) { .phone .brand { display: none; } }
+
+/* start page */
+#home { display: none; }
+html.at-home, html.at-home body { overflow: hidden; }
+html.at-home #home { display: flex; flex-direction: column; position: fixed; inset: 0; z-index: 200; overflow: auto; background: var(--bg); padding: 16px 16px calc(24px + env(safe-area-inset-bottom)); }
+.home-bar { display: flex; justify-content: flex-end; }
+.home-bar .seg button { font-family: var(--sans); }
+.home-body { width: 100%; max-width: 860px; margin: auto; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px 0; text-align: center; }
+.home-title { margin: 0; font-size: clamp(26px, 5vw, 40px); line-height: 1.15; }
+.home-lead { margin: 0; color: var(--text-2); font-size: 16px; }
+.home-cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; width: 100%; margin: 8px 0 12px; }
+.season { width: min(420px, 100%); display: flex; flex-direction: column; overflow: hidden; border-radius: 18px; background: var(--panel); border: 1px solid var(--line-2); color: var(--text); text-decoration: none; text-align: left; transition: border-color .15s, transform .15s; }
+.season:hover, .season:focus-visible { border-color: var(--accent); transform: translateY(-2px); }
+.season-art { display: block; width: 100%; height: auto; }
+.season-body { display: flex; flex-direction: column; gap: 8px; padding: 16px 18px 18px; line-height: 1.5; }
+.season-name { font-size: 28px; letter-spacing: .06em; color: var(--accent); }
+.season-go { justify-content: center; margin-top: 6px; }
+.home-foot { margin: 0; }
+.home-foot a { color: var(--accent); }
+a.logo { text-decoration: none; flex: none; }
+.phone .logo { display: grid; width: 40px; height: 40px; }
+
+/* my files */
+.filebar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 8px; }
+.file-name { flex: 1 1 150px; min-width: 0; display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 10px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--bg); color: var(--text); font: 700 14px var(--sans); cursor: pointer; text-align: left; }
+.file-name .ic { flex: none; }
+#fb-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#fb-mark { color: #F2C48A; }
+.file-name:disabled { opacity: .45; cursor: default; }
+dialog.files { width: min(640px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow: auto; padding: 18px; border-radius: 16px; background: var(--panel); color: var(--text); border: 1px solid var(--line-2); }
+dialog.files::backdrop { background: #000b; }
+.files-kinds { background: var(--bg); }
+.file-actions .btn.primary { background: var(--accent); color: var(--bg); font-size: 13px; }
+dialog.files[open] { display: flex; flex-direction: column; gap: 10px; }
+.files h2 { margin: 0; }
+.files > * { flex: none; }
+.files-kinds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.files-kinds button { font-family: var(--sans); min-height: 40px; }
+.files-form { display: flex; flex-wrap: wrap; gap: 8px; }
+.files-form input { flex: 1 1 200px; min-width: 0; min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--bg); color: var(--text); font-size: 16px; }
+#files-from-computer { align-self: flex-start; }
+.files-status { margin: 0; min-height: 1.4em; color: var(--accent); font-size: 14px; }
+.files-status.bad { color: #F2A6A0; }
+.files-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.file-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--panel-2); border: 1px solid transparent; }
+.file-row.current { border-color: var(--accent); }
+.file-info { flex: 1 1 220px; min-width: 0; display: flex; flex-direction: column; gap: 3px; overflow-wrap: anywhere; }
+.file-actions { gap: 6px; flex-wrap: wrap; }
+/* buttons on the light practice panels */
+.training-panel .btn, .debugger-panel .btn, #training-picker .btn { color: #203c32; border-color: #8aa597; }
+.training-panel .btn.primary, .debugger-panel .btn.primary, #training-picker .btn.primary { color: var(--bg); border-color: var(--accent); background: var(--accent); }
+/* phone: the file name gets its own line, and the three tabs of "My files" fit */
+.phone .file-name { flex-basis: 100%; }
+.phone .filebar .btn { flex: 1 1 auto; justify-content: center; }
+.phone dialog.files { padding: 14px 12px; }
+.phone .files-kinds button { min-width: 0; padding: 0 2px; font-size: 12px; overflow-wrap: anywhere; }
+/* very narrow phones (320 px): the header buttons need less room */
+@media (max-width: 360px) {
+  .phone .actions { gap: 4px; }
+  .phone .actions .btn { padding: 0 8px; min-width: 0; }
+  .phone .actions .seg { gap: 0; padding: 2px; }
+  .phone .actions .seg button { padding: 0 6px; min-width: 0; }
+}
